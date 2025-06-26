@@ -1,0 +1,32 @@
+name: macOS Build Only
+
+on:
+    workflow_dispatch:
+    push:
+
+jobs:
+    build-macos:
+        runs-on: macos-latest
+        strategy:
+            matrix:
+                arch: [x86_64, arm64]
+                config: [debug, release]
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Install Dependencies
+              run: brew install cmake
+
+            - name: Build
+              run: |
+                  mkdir build
+                  cd build
+                  cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+                  cmake --build . --config ${{ matrix.config }}
+
+            - name: Upload Artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: Unleashed-macOS-${{ matrix.arch }}-${{ matrix.config }}
+                  path: build/
